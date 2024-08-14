@@ -1,0 +1,5 @@
+django>=5.0
+djangorestframework
+# для генерации erd диаграммы
+django_extensions
+pydotplus
