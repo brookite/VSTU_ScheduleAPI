@@ -108,6 +108,23 @@ class Schedule(CommonModel):
     scope = models.CharField(choices=Scope, max_length=32, verbose_name="Обучение")
     course = models.IntegerField(verbose_name="Курс")
     semester = models.IntegerField(verbose_name="Семестр")
-    course_start = models.DateField(verbose_name="Начало учебного года")
-    course_finish = models.DateField(verbose_name="Окончание учебного года")
+    years = models.CharField(max_length=16, verbose_name="Учебный год")
     events = models.ManyToManyField(Event, verbose_name="Занятия")
+
+    def start_date(self):
+        events = self.events.all()
+
+        return (
+            events.annotate(min_date=models.Min('eventholding__date'))
+            .order_by('min_date')
+            .first()
+        )
+    
+    def finish_date(self):
+        events = self.events.all()
+
+        return (
+            events.annotate(max_date=models.Max('eventholding__date'))
+            .order_by('-max_date')
+            .first()
+        )
