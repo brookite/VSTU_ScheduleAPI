@@ -37,8 +37,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "drf_redesign",
+    "rest_framework",
+    "django_extensions",
+    "django_filters",
     "api",
-    "django_extensions"
 ]
 
 MIDDLEWARE = [
@@ -123,3 +126,12 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": (
+        "api.handlers.ResponseJSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+    ),
+    "EXCEPTION_HANDLER": "api.handlers.exception_response_handler",
+}
