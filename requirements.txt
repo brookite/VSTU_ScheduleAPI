@@ -1,5 +1,6 @@
 django>=5.0
 djangorestframework
-# для генерации erd диаграммы
+django-filter
+drf-redesign
+Markdown
 django_extensions
-pydotplus
