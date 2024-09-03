@@ -10,7 +10,11 @@ class CommonModel(models.Model):
         abstract = True
 
     idnumber = models.CharField(
-        unique=True, null=True, max_length=260, verbose_name="Уникальный строковый идентификатор"
+        unique=True,
+        blank=True,
+        null=True,
+        max_length=260,
+        verbose_name="Уникальный строковый идентификатор",
     )
     datecreated = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания записи")
     datemodified = models.DateTimeField(auto_now_add=True, verbose_name="Дата изменения записи")
@@ -18,7 +22,7 @@ class CommonModel(models.Model):
         null=True, blank=True, verbose_name="Дата доступа к записи"
     )
     author = models.ForeignKey(
-        User, null=True, on_delete=models.SET_NULL, verbose_name="Автор записи"
+        User, blank=True, null=True, on_delete=models.SET_NULL, verbose_name="Автор записи"
     )
     note = models.TextField(
         null=True, blank=True, verbose_name="Комментарий для этой записи", max_length=1024
