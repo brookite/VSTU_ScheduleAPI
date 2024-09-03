@@ -47,3 +47,16 @@ python manage.py load_testdata
 ## ERD диаграмма
 
 ![ERD Диаграмма](resources/erd.png)
+
+## Помощь и FAQ
+
+1. Если необходимо отключить Browsable API (интерфейс API с браузера), удалите строчку, указанную ниже, в [файле](vstu_schedule/settings.py)
+```python
+REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": (
+        "api.handlers.ResponseJSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer", # удалите эту строчку
+    ),
+    "EXCEPTION_HANDLER": "api.handlers.exception_response_handler",
+}
+```
