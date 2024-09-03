@@ -26,5 +26,7 @@ class TimeArrayField(serializers.Field):
         if isinstance(data, list) and len(data) == 2:
             hour, minute = data
             return datetime.time(hour=hour, minute=minute)
+        elif isinstance(data, datetime.time):
+            return data
         raise serializers.ValidationError("Неверный формат времени. Ожидается [часы, минуты]")
 

@@ -1,3 +1,5 @@
+import traceback
+from django.conf import settings
 from rest_framework.renderers import JSONRenderer
 from rest_framework.exceptions import (
     ValidationError,
@@ -28,30 +30,48 @@ class ResponseJSONRenderer(JSONRenderer):
 def exception_response_handler(exc, context):
     response = exception_handler(exc, context)
 
+    if settings.DEBUG:
+        traceback.print_exc()
+
     if response is not None:
         # Определяем тип ошибки и сообщение
-        error_code = map_exception_to_errcode(exc)
-        response.data = {
-            "type": "error",
-            "message": response.data.get("detail", "Произошла неизвестная ошибка"),
-            "error_code": error_code,
-        }
-        if isinstance(exc, ScheduleAPIException):
-            response.status_code = exc.http_code
+        detail_message = None
+        if isinstance(response.data, dict):
+            detail_message = response.data.get("detail")
+        response.data = {"type": "error", "message": detail_message}
+        add_exception_data_to_response(response, exc)
+        if settings.DEBUG:
+            response.data["exception_class"] = type(exc).__qualname__
 
     return response
 
 
-def map_exception_to_errcode(exception):
+def add_exception_data_to_response(response, exception):
+    # TODO: Нужно более детерминированное опознание ошибок и выдачи их информации
+
     if isinstance(exception, ScheduleAPIException):
-        return exception.internal_error_code
+        error_code = exception.internal_error_code
     elif isinstance(exception, ValidationError):
-        return 1
+        error_code = 1
+        response.data["message"] = "Введены некорректные данные"
+        response.data["validation_details"] = exception.detail
     elif isinstance(exception, NotAuthenticated | PermissionDenied):
-        return 2
+        error_code = 2
+        response.data["message"] = "У вас нет прав для выполнения данного запроса"
     elif isinstance(exception, AuthenticationFailed):
-        return 3
+        error_code = 3
+        response.data["message"] = "Не удалось произвести авторизацию"
     elif isinstance(exception, NotImplementedError):
-        return 4
+        error_code = 4
+        response.data["message"] = "Данная функциональность пока не реализована"
     else:
-        return 0
+        error_code = 0
+    response.data["error_code"] = error_code
+
+    if not response.data["message"] and hasattr(exception, "message"):
+        # Пробуем вывести сообщение об ошибке прямо из исключения
+        response.data["message"] = exception.message
+    elif not response.data["message"]:
+        response.data["message"] = (
+            "Неизвестная ошибка. Обратитесь к коду ошибки HTTP, логам приложения"
+        )
