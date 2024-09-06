@@ -1,3 +1,4 @@
+from django.db.models import ForeignKey, ManyToManyField
 from rest_framework import serializers
 
 from api.models import (
@@ -70,20 +71,54 @@ class CommonModelSerializer(serializers.ModelSerializer):
 
 
 class CommonModelListSerializer(serializers.ListSerializer):
-    # Класс, нужный для множественного сохранения данных во вложенные сериализаторы
+    """
+    Подробнее о необходимости внедрения этого класса читать здесь:
+    https://www.django-rest-framework.org/api-guide/serializers/#deserializing-multiple-objects
+    https://www.django-rest-framework.org/api-guide/serializers/#customizing-multiple-update
+    """
+
     def update(self, instance, validated_data):
         instance = instance.all()
-        participant_mapping = {item.id: item for item in instance}
-        ret = []
+        instance_mapping = {obj.id: obj for obj in instance}
+        new_data = [
+            validated_data[i]
+            for i in range(len(validated_data))
+            if validated_data[i].get("id") is None
+        ]
+        for data in new_data:
+            validated_data.remove(data)
+        data_mapping = {item["id"]: item for item in validated_data}
 
-        for participant_data in validated_data:
-            participant = participant_mapping.get(participant_data.get("id"), None)
-            if participant:
-                ret.append(self.child.update(participant, participant_data))
+        # Обновляем или создаем объекты
+        ret = []
+        for obj_id, data in data_mapping.items():
+            if obj_id in instance_mapping:
+                # Обновление существующего объекта
+                obj = instance_mapping[obj_id]
+                ret.append(self.child.update(obj, data))
             else:
-                ret.append(self.child.create(participant_data))
+                # Создание нового объекта
+                ret.append(self.child.create(data))
+        for data in new_data:
+            ret.append(self.child.create(data))
+
+        for ins_id, ins in instance_mapping.items():
+            if ins_id not in data_mapping:
+                self._remove_relationships(ins)
 
         return ret
+
+    def _remove_relationships(self, obj):
+        for field in obj._meta.get_fields():
+            if isinstance(field, (ForeignKey, ManyToManyField)):
+                related_manager = getattr(obj, field.name)
+
+                if isinstance(field, ManyToManyField):
+                    related_manager.clear()
+                elif isinstance(field, ForeignKey):
+                    if field.null:
+                        setattr(obj, field.name, None)
+                        obj.save()
 
 
 class SubjectSerializer(CommonModelSerializer):
@@ -129,16 +164,21 @@ class EventHoldingSerializer(CommonModelSerializer):
 
     # DRF возлагает создание и обновление объектов из вложенных сериализаторов на разработчика!
     def create(self, validated_data):
-        place_data = validated_data.pop("place")
-        time_slot_data = validated_data.pop("time_slot")
+        place_data = validated_data.pop("place", {})
+        time_slot_data = validated_data.pop("time_slot", {})
 
         # Используем вложенные сериализаторы для создания объектов
         # DRF возлагает создание объектов из вложенных сериализаторов на разработчика!
-        place_serializer = EventPlaceSerializer(data=place_data)
+        place_id = place_data.pop("id", None)
+        place_instance = EventPlace.objects.get(id=place_id) if place_id else None
+
+        place_serializer = EventPlaceSerializer(instance=place_instance, data=place_data)
         place_serializer.is_valid(raise_exception=True)
         place = place_serializer.save()
 
-        time_slot_serializer = TimeSlotSerializer(data=time_slot_data)
+        timeslot_instance = TimeSlot.objects.filter(**time_slot_data).first()
+
+        time_slot_serializer = TimeSlotSerializer(instance=timeslot_instance, data=time_slot_data)
         time_slot_serializer.is_valid(raise_exception=True)
         time_slot = time_slot_serializer.save()
 
@@ -153,6 +193,7 @@ class EventHoldingSerializer(CommonModelSerializer):
         time_slot_data = validated_data.pop("time_slot", None)
 
         if place_data:
+            place_data.pop("id", None)
             place_serializer = EventPlaceSerializer(
                 instance.place,
                 data=place_data,
@@ -193,6 +234,7 @@ class EventSerializer(CommonModelSerializer):
             "holding_info",
             "schedule_id",
         ]
+        list_serializer_class = CommonModelListSerializer
 
     # DRF возлагает создание и обновление объектов из вложенных сериализаторов на разработчика!
     def create(self, validated_data):
@@ -201,15 +243,21 @@ class EventSerializer(CommonModelSerializer):
         holding_info_data = validated_data.pop("holdings")
         kind = validated_data.pop("kind")
 
-        participants_serializer = EventParticipantSerializer(data=participants_data, many=True)
+        participants_serializer = EventParticipantSerializer(
+            EventParticipant.objects.all(), data=participants_data, many=True
+        )
         participants_serializer.is_valid(raise_exception=True)
         participants = participants_serializer.save()
 
-        subject_serializer = SubjectSerializer(data=subject_data)
+        subject_id = subject_data.pop("id", None)
+        subject_instance = Subject.objects.get(id=subject_id) if subject_id else None
+        subject_serializer = SubjectSerializer(instance=subject_instance, data=subject_data)
         subject_serializer.is_valid(raise_exception=True)
         subject = subject_serializer.save()
 
-        holding_info_serializer = EventHoldingSerializer(data=holding_info_data, many=True)
+        holding_info_serializer = EventHoldingSerializer(
+            EventHolding.objects.all(), data=holding_info_data, many=True
+        )
         holding_info_serializer.is_valid(raise_exception=True)
         holding_info = holding_info_serializer.save()
 
@@ -258,6 +306,7 @@ class EventSerializer(CommonModelSerializer):
             instance.kind = kind_model
 
         self._detect_record_update(instance, validated_data)
+        instance.schedule = validated_data.get("schedule", instance.schedule)
         instance.save()
 
         return instance
@@ -279,6 +328,7 @@ class ScheduleSerializer(CommonModelSerializer):
             "start_date",
             "finish_date",
         ]
+        list_serializer_class = CommonModelListSerializer
 
     def get_start_date(self, instance):
         return instance.first_event().min_date
