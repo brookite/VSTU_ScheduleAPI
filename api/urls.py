@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 from api.views import (
     EventKindListView,
     EventViewSet,
@@ -25,6 +25,7 @@ router.register(r"schedules", ScheduleViewSet, basename="schedules")
 
 
 urlpatterns = [
+    path("session-auth/", include("rest_framework.urls")),
     path("events/kind/", EventKindListView.as_view()),
     path("import/json/", JSONImportAPIView.as_view()),
     path("import/db/", DBImportAPIView.as_view()),

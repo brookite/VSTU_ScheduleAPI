@@ -1,6 +1,13 @@
 import json
-from os.path import abspath
+
 from django.shortcuts import redirect
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, generics, status, viewsets
+from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.response import Response
+from rest_framework.routers import APIRootView
+from rest_framework.views import APIView
+
 from api.filters import EventFilter, ScheduleFilter
 from api.importers import JSONImporter
 from api.models import Event, EventKind, EventParticipant, EventPlace, Schedule, Subject
@@ -12,12 +19,6 @@ from api.serializers import (
     ScheduleSerializer,
     SubjectSerializer,
 )
-from rest_framework import generics, filters, status, viewsets
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAdminUser, AllowAny
-from rest_framework.response import Response
-from rest_framework.routers import APIRootView
-from django_filters.rest_framework import DjangoFilterBackend
 
 
 class SchedulesAPIRootView(APIRootView):
