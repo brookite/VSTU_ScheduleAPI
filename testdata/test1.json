@@ -1,82 +1,107 @@
 {
-    "subjects": [
-        {"id": 1, "name": "Математика"},
-        {"id": 2, "name": "Физика"},
-        {"id": 3, "name": "Программирование"},
-        {"id": 4, "name": "Химия"},
-        {"id": 5, "name": "История"},
-        {"id": 6, "name": "Философия"},
-        {"id": 7, "name": "Информатика"},
-        {"id": 8, "name": "Экономика"},
-        {"id": 9, "name": "Менеджмент"},
-        {"id": 10, "name": "Социология"}
-    ],
-    "event_kinds": [
-        {"id": 1, "name": "Лекция"},
-        {"id": 2, "name": "Семинар"},
-        {"id": 3, "name": "Практическое занятие"},
-        {"id": 4, "name": "Лабораторная работа"}
-    ],
-    "time_slots": [
-        {"id": 1, "start_time": "09:00", "end_time": "10:30"},
-        {"id": 2, "start_time": "10:45", "end_time": "12:15"},
-        {"id": 3, "start_time": "12:30", "end_time": "14:00"},
-        {"id": 4, "start_time": "14:15", "end_time": "15:45"},
-        {"id": 5, "start_time": "16:00", "end_time": "17:30"}
-    ],
-    "event_places": [
-        {"id": 1, "building": "ГУК", "room": "101"},
-        {"id": 2, "building": "ГУК", "room": "102"},
-        {"id": 3, "building": "ГУК", "room": "103"},
-        {"id": 4, "building": "ГУК", "room": "104"},
-        {"id": 5, "building": "ГУК", "room": "105"},
-        {"id": 6, "building": "ГУК", "room": "106"},
-        {"id": 7, "building": "ГУК", "room": "107"},
-        {"id": 8, "building": "ГУК", "room": "108"},
-        {"id": 9, "building": "ГУК", "room": "109"},
-        {"id": 10, "building": "ГУК", "room": "110"}
-    ],
-    "event_participants": [
-        {"id": 1, "name": "Иванов Иван Иванович", "role": "teacher"},
-        {"id": 2, "name": "Петров Петр Петрович", "role": "teacher"},
-        {"id": 3, "name": "Сидоров Сидор Сидорович", "role": "teacher"},
-        {"id": 4, "name": "ПрИн-367", "role": "student"},
-        {"id": 5, "name": "ПрИн-366", "role": "student"},
-        {"id": 6, "name": "Кузнецов Кузьма Кузьмич", "role": "student"},
-        {"id": 7, "name": "Тестов Тест Тестович", "role": "assistant"},
-        {"id": 8, "name": "ПрИн-368", "role": "student"},
-        {"id": 9, "name": "ИВТ-360", "role": "student"},
-        {"id": 10, "name": "Михайлов Михаил Михайлович", "role": "teacher"}
-    ],
-    "schedules": [
-        {"id": 1, "faculty": "ФЭВТ", "scope": "bachelor", "course": 1, "semester": 1, "years": "2024-2025"},
-        {"id": 2, "faculty": "ФЭВТ", "scope": "bachelor", "course": 2, "semester": 3, "years": "2024-2025"},
-        {"id": 3, "faculty": "ФЭВТ", "scope": "master", "course": 1, "semester": 1, "years": "2024-2025"},
-        {"id": 4, "faculty": "ФЭВТ", "scope": "master", "course": 2, "semester": 3, "years": "2024-2025"},
-        {"id": 5, "faculty": "ФЭВТ", "scope": "postgraduate", "course": 1, "semester": 1, "years": "2024-2025"}
-    ],
-    "events": [
-        {"id": 1, "subject_id": 1, "kind_id": 1, "participants": [1, 4], "schedule_id": 1},
-        {"id": 2, "subject_id": 2, "kind_id": 2, "participants": [2, 5], "schedule_id": 2},
-        {"id": 3, "subject_id": 3, "kind_id": 3, "participants": [3, 6], "schedule_id": 3},
-        {"id": 4, "subject_id": 4, "kind_id": 4, "participants": [1, 7], "schedule_id": 4},
-        {"id": 5, "subject_id": 5, "kind_id": 1, "participants": [2, 8], "schedule_id": 5},
-        {"id": 6, "subject_id": 6, "kind_id": 2, "participants": [3, 9], "schedule_id": 1},
-        {"id": 7, "subject_id": 7, "kind_id": 3, "participants": [1, 10], "schedule_id": 2},
-        {"id": 8, "subject_id": 8, "kind_id": 4, "participants": [2, 4], "schedule_id": 3},
-        {"id": 9, "subject_id": 9, "kind_id": 1, "participants": [3, 5], "schedule_id": 4},
-        {"id": 10, "subject_id": 10, "kind_id": 2, "participants": [1, 6], "schedule_id": 5}
-    ],
-    "event_holdings": [
-        {"id": 1, "event_id": 1, "place_id": 1, "date": "2024-09-01", "slot_id": 1},
-        {"id": 2, "event_id": 2, "place_id": 2, "date": "2024-09-02", "slot_id": 2},
-        {"id": 3, "event_id": 3, "place_id": 3, "date": "2024-09-03", "slot_id": 3},
-        {"id": 4, "event_id": 4, "place_id": 4, "date": "2024-09-04", "slot_id": 4},
-        {"id": 5, "event_id": 5, "place_id": 5, "date": "2024-09-05", "slot_id": 5},
-        {"id": 6, "event_id": 6, "place_id": 6, "date": "2024-09-06", "slot_id": 1},
-        {"id": 7, "event_id": 7, "place_id": 7, "date": "2024-09-07", "slot_id": 2},
-        {"id": 8, "event_id": 8, "place_id": 8, "date": "2024-09-08", "slot_id": 3},
-        {"id": 9, "event_id": 9, "place_id": 9, "date": "2024-09-09", "slot_id": 4},
-        {"id": 10, "event_id": 10, "place_id": 10, "date": "2024-09-10", "slot_id": 5}
-    ]
+  "subjects": [
+    {
+      "idnumber": "e783b2ec-d72f-4b3c-bd98-9e3198b931e5",
+      "name": "Алгоритмы и структуры данных"
+    },
+    {
+      "idnumber": "f5e0c46e-85f7-47b7-b2ec-5d6e42dbb4de",
+      "name": "Сети и системы связи"
+    },
+    {
+      "idnumber": "b8a2e6cb-98ef-4b84-bc2b-5b0f14a7ed54",
+      "name": "Программирование"
+    }
+  ],
+  "event_kinds": [
+    {
+      "idnumber": "8d7e40f5-5dc7-4a25-919f-1351c5cb4d4e",
+      "name": "Лекция"
+    },
+    {
+      "idnumber": "b403457e-2280-4de2-8d1a-837d902b3f9b",
+      "name": "Практика"
+    }
+  ],
+  "time_slots": [
+    {
+      "idnumber": "b92e0b9d-df57-4f0f-a598-75b2f93f442b",
+      "start_time": "08:30",
+      "end_time": "10:00"
+    },
+    {
+      "idnumber": "f15e4374-2683-4abf-b7e0-2d6f6e36c109",
+      "start_time": "10:15",
+      "end_time": "11:45"
+    },
+    {
+      "idnumber": "fac04e76-d59e-4690-bdf2-9b30843c9261",
+      "start_time": "12:00",
+      "end_time": "13:30"
+    }
+  ],
+  "event_places": [
+    {
+      "idnumber": "073e319f-d29d-48d5-b579-1fbe69caa2e5",
+      "building": "Гл. корпус",
+      "room": "Ауд. 215"
+    },
+    {
+      "idnumber": "9a2d6609-1d99-4ad1-bcbf-bb3b1dbdd680",
+      "building": "Гл. корпус",
+      "room": "Ауд. 314"
+    }
+  ],
+  "event_participants": [
+    {
+      "idnumber": "3434c8da-c4c2-4c5a-9613-88b5e724f62d",
+      "name": "Иванов Иван",
+      "role": "student"
+    },
+    {
+      "idnumber": "e5c47ff1-7193-41f6-80a5-d0e3c97ec6f1",
+      "name": "Петров Петр",
+      "role": "teacher"
+    },
+    {
+      "idnumber": "0d1c584d-e609-49d9-8b68-f2b3a2ea2a0d",
+      "name": "Группа Б-18-1",
+      "role": "student"
+    },
+    {
+      "idnumber": "f5985d08-54cb-4744-bb7f-1c3a5b23f409",
+      "name": "Группа Б-19-1",
+      "role": "student"
+    }
+  ],
+  "schedules": [
+    {
+      "idnumber": "1b3e6117-d00b-467d-9e13-faa5b9f55df4",
+      "faculty": "ФЭВТ",
+      "scope": "bachelor",
+      "course": 3,
+      "semester": 5,
+      "years": "2023-2024"
+    }
+  ],
+  "events": [
+    {
+      "idnumber": "539d4d47-b948-4f55-8e91-98cf8f3ff73d",
+      "subject_id": "e783b2ec-d72f-4b3c-bd98-9e3198b931e5",
+      "kind_id": "8d7e40f5-5dc7-4a25-919f-1351c5cb4d4e",
+      "schedule_id": "1b3e6117-d00b-467d-9e13-faa5b9f55df4",
+      "participants": [
+        "3434c8da-c4c2-4c5a-9613-88b5e724f62d",
+        "e5c47ff1-7193-41f6-80a5-d0e3c97ec6f1"
+      ],
+      "holding_info": [
+        {
+          "idnumber": "2c569aa9-568d-43ff-8767-5d87b36c64e8",
+          "place_id": "073e319f-d29d-48d5-b579-1fbe69caa2e5",
+          "date": "2024-09-10",
+          "slot_id": "b92e0b9d-df57-4f0f-a598-75b2f93f442b"
+        }
+      ]
+    }
+  ]
 }

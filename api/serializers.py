@@ -335,3 +335,9 @@ class ScheduleSerializer(CommonModelSerializer):
 
     def get_finish_date(self, instance):
         return instance.last_event().max_date
+
+
+class FileUploadSerializer(serializers.Serializer):
+    """Необходимый для работы импорта сериализатор"""
+
+    file = serializers.FileField(required=False)

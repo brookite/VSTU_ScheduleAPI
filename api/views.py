@@ -1,18 +1,22 @@
+import json
+from os.path import abspath
 from django.shortcuts import redirect
 from api.filters import EventFilter, ScheduleFilter
+from api.importers import JSONImporter
 from api.models import Event, EventKind, EventParticipant, EventPlace, Schedule, Subject
 from api.serializers import (
     EventParticipantSerializer,
     EventPlaceSerializer,
     EventSerializer,
+    FileUploadSerializer,
     ScheduleSerializer,
     SubjectSerializer,
 )
 from rest_framework import generics, filters, status, viewsets
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework.routers import APIRootView
-from rest_framework.decorators import api_view, permission_classes
 from django_filters.rest_framework import DjangoFilterBackend
 
 
@@ -22,9 +26,11 @@ class SchedulesAPIRootView(APIRootView):
     API предоставляет базовое управления сущностями, представляющими элементы расписания
 
     # Общая информация
-    API позволяет управлять следующими сущностями:<br>
+    API позволяет управлять следующими сущностями: <br>
+
     - [Расписание](/api/schedules)<br>
     - [Занятие](/api/events)<br>
+        - [Тип занятия](/api/events/kind) (только чтение) <br>
     - [Место проведения](/api/lessonrooms)<br>
     - [Тип события](/api/events/kind)<br>
     - [Группы](/api/groups) и [преподаватели](/api/teachers)<br>
@@ -49,19 +55,29 @@ class SchedulesAPIRootView(APIRootView):
     - `datecreated` - дата создания записи (нельзя изменить) <br>
     - `datemodified` - дата изменения записи (нельзя изменить) <br>
     - `dateaccessed` - дата последнего доступа к записи (нельзя изменить) <br>
-    - `idnumber` - уникальный строковый идентификатор для отладочных целей <br>
+    - `idnumber` - уникальный строковый идентификатор для отладочных целей и импорта <br>
     - `author` - автор записи (может быть программным компонентом, т.е. сервисным аккаунтом) <br>
     - `note` - комментарий для записи (максимальная длина - 1024 символа) <br>
 
     ## Внутренние коды ошибок
+
+
     `0` - неизвестная ошибка. Более подробную информацию нужно брать из сообщения об ошибке и кода ошибки HTTP<br>
     `1` - ошибка проверки данных. Одно из переданных значений не является валидным<br>
     `2` - ошибка доступа. Возможно, требуется авторизация или особая роль<br>
     `3` - ошибка выполнения аутентификации<br>
     `4` - нереализованная на данный момент возможность API<br>
 
+    ## Для администраторов
+
     Если вы являетесь администратором, то можете [перейти в панель администратора](/admin),
     в которой доступно более детальное управление базой данных расписаний
+
+    Сервис поддерживает импорт данных в API из сторонних источников, доступный только администраторам:<br>
+
+    - [из JSON](/api/import/json)<br>
+    - [из внешней базы данных](/api/import/db) (пока недоступно)<br>
+
     """
 
     def get_view_name(self):
@@ -320,24 +336,81 @@ class ScheduleViewSet(CommonViewSet):
         return "Расписание"
 
 
-@api_view(["GET"])
-@permission_classes([IsAdminUser])
-def import_db(request):
-    # Заглушка для импорта базы данных
-    return Response(
-        {"type": "error", "message": "Not implemented", "error_code": 4},
-        status=status.HTTP_501_NOT_IMPLEMENTED,
-    )
+class DBImportAPIView(APIView):
+    """
+    Данная функциональность не реализована на текущий момент. Это заглушка.
+    """
+
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        # Заглушка для импорта базы данных
+        return Response(
+            {"type": "error", "message": "Not implemented", "error_code": 4},
+            status=status.HTTP_501_NOT_IMPLEMENTED,
+        )
+
+    def get_view_name(self):
+        return "Импортирование из внешней базы данных"
 
 
-@api_view(["GET"])
-@permission_classes([IsAdminUser])
-def import_json(request):
-    # Заглушка для импорта JSON
-    return Response(
-        {"type": "error", "message": "Not implemented", "error_code": 4},
-        status=status.HTTP_501_NOT_IMPLEMENTED,
-    )
+class JSONImportAPIView(APIView):
+    """
+    Данный инструмент позволяет администратору заполнять базу данных API расписаний
+    с помощью укомплектованного JSON файла специального формата
+
+    # Описание формата
+
+    Все объекты модели (поля в таблицах) заполняются по уникальному строковому идентификатору `idnumber`,
+    он может быть произвольной строкой до 255 символов, например UUID или любой другой формат уникального ID, который предпочтет администратор или система, формирующие данные для импорта в БД для API
+    В будущем, по заданному строковому идентификатору можно будет выполнить редактирование записи через импорт JSON
+    Не рекомендуется использовать числа в качестве строкового идентификатора. В будущем, по ним будет неудобно ориентироваться
+
+
+    На данный момент формат экспорта не поддерживает опциональное указание свойств объекта из модели
+    Чтобы отредакторировать запись в таблице (объект модели) необходимо указать
+    все возможные поля этого объекта, а также уникальный строковый идентификатор, который был указан для этой записи заранее при предыдущих импортах или другим способом
+
+
+    Содержимое JSON должно представлять собой объект, в котором есть следующие ключи со списком:
+
+    - `subjects` - список предметов, содержащий объекты с ключом `name`, указывающим имя предмета <br>
+    - `event_kinds` - список типов событий, содержащий объекты с ключом `name`, указывающим тип события <br>
+    - `time_slots` - список временных интервалов, содержащий объекты с ключами `start_time`, `end_time`.
+    Время указывается строкой в формате HH:MM <br>
+    - `event_places` - список мест проведения событий с ключами `building`, `room` <br>
+    - `event_participants` - список участников события с ключами `name`, `role` (значение перечисления, см. [в объекте преподавателя](/api/teachers) и [объекте групп обучающихся](/api/groups)) <br>
+    - `schedules` - список расписаний с ключами `faculty`, `scope`, `course`, `semester`, `years` (см. в [объекте расписаний](/api/schedules)) <br>
+    - `events` - список событий вместе с информацией об их проведении. Ключи `kind_id`, `schedule_id`, `subject_id` обозначают один `idnumber` соответствующих объектов (по сути, ссылка на него),
+    также объект события требует наличия списка `participants`, состоящего из `idnumber` участников,
+    и списка `holding_info`, который содержит объекты информации о проведении. Этот объект содержит ключ `date`, а также `place_id` и `slot_id`, являющиеся одним `idnumber` места проведения и временного интервала проведения события соответственно <br>
+
+    Также, стоит отметить, что у всех объектов, импортируемых через JSON, должен быть уникальный строковый идентификатор, который хранится в ключе `idnumber`
+    """
+
+    permission_classes = [IsAdminUser]
+    serializer_class = FileUploadSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = FileUploadSerializer(data=request.data)
+        if serializer.is_valid():
+            json_file = serializer.validated_data.get("file", None)
+            if json_file:
+                # Обработка файла
+                file_data = json_file.read().decode("utf-8")
+                json_content = json.loads(file_data)
+                return self.process_content(json_content)
+
+        json_content = json.loads(request.body.decode("utf-8"))
+        return self.process_content(json_content)
+
+    def process_content(self, json_content):
+        JSONImporter(json_content).import_data()
+        return Response({"result": True}, status=status.HTTP_200_OK)
+
+    def get_view_name(self):
+        return "Импортирование данных из JSON"
+
 
 def index(request):
     return redirect("/api", False)

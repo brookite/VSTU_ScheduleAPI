@@ -3,13 +3,13 @@ from api.views import (
     EventKindListView,
     EventViewSet,
     GroupViewSet,
+    JSONImportAPIView,
+    DBImportAPIView,
     LessonRoomViewSet,
     ScheduleViewSet,
     SchedulesAPIRootView,
     SubjectViewSet,
     TeacherViewSet,
-    import_db,
-    import_json,
 )
 from rest_framework.routers import DefaultRouter
 
@@ -25,9 +25,9 @@ router.register(r"schedules", ScheduleViewSet, basename="schedules")
 
 
 urlpatterns = [
-    path("events/kind/", EventKindListView.as_view(), name="event-kind-list"),
-    path("import/db/", import_db, name="import-db"),
-    path("import/json/", import_json, name="import-json"),
+    path("events/kind/", EventKindListView.as_view()),
+    path("import/json/", JSONImportAPIView.as_view()),
+    path("import/db/", DBImportAPIView.as_view()),
 ]
 
 urlpatterns += router.urls
