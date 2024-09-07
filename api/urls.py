@@ -6,6 +6,7 @@ from api.views import (
     JSONImportAPIView,
     DBImportAPIView,
     LessonRoomViewSet,
+    ObtainAPIUserToken,
     ScheduleViewSet,
     SchedulesAPIRootView,
     SubjectViewSet,
@@ -29,6 +30,7 @@ urlpatterns = [
     path("events/kind/", EventKindListView.as_view()),
     path("import/json/", JSONImportAPIView.as_view()),
     path("import/db/", DBImportAPIView.as_view()),
+    path("obtain-token/", ObtainAPIUserToken.as_view()),
 ]
 
 urlpatterns += router.urls

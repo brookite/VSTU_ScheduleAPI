@@ -12,6 +12,8 @@ from api.models import (
     Subject,
 )
 
+from rest_framework.authtoken.admin import TokenAdmin
+
 
 class EventHoldingInlineFormSet(BaseInlineFormSet):
     pass
@@ -75,3 +77,6 @@ class EventAdmin(BaseAdmin):
     search_fields = ("subject__name", "kind__name")
     list_filter = ("kind",)
     inlines = [EventHoldingInline]
+
+
+TokenAdmin.raw_id_fields = ["user"]

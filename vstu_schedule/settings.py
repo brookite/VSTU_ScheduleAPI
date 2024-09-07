@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "drf_redesign",
     "rest_framework",
+    "rest_framework.authtoken",
     "django_extensions",
     "django_filters",
     "api",
@@ -131,6 +132,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",  # Аутентификация по сессии
+        "rest_framework.authentication.TokenAuthentication",
     ),
     "DEFAULT_RENDERER_CLASSES": (
         "api.handlers.ResponseJSONRenderer",
