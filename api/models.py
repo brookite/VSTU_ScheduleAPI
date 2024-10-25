@@ -90,6 +90,7 @@ class EventParticipant(CommonModel):
 
     name = models.CharField(max_length=255, verbose_name="Имя")
     role = models.CharField(choices=Role, max_length=48, null=False, verbose_name="Роль")
+    is_group = models.BooleanField(verbose_name="Является группой", default=False)
 
     def __repr__(self):
         return str(self.name) + f" ({self.role})"
