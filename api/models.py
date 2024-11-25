@@ -52,6 +52,7 @@ class TimeSlot(CommonModel):
         verbose_name = "Время проведения события"
         verbose_name_plural = "Времена проведения события"
 
+    alt_name = models.TextField(verbose_name="Академ. часы пары")
     start_time = models.TimeField(verbose_name="Время начала")
     end_time = models.TimeField(null=True, verbose_name="Время окончания")
 
@@ -77,25 +78,6 @@ class EventPlace(CommonModel):
     def __repr__(self):
         return str(self.room)
 
-
-class EventParticipant(CommonModel):
-    class Meta:
-        verbose_name = "Участник события"
-        verbose_name_plural = "Участники события"
-
-    class Role(models.TextChoices):
-        STUDENT = "student", "Студент"
-        TEACHER = "teacher", "Преподаватель"
-        ASSISTANT = "assistant", "Ассистент"
-
-    name = models.CharField(max_length=255, verbose_name="Имя")
-    role = models.CharField(choices=Role, max_length=48, null=False, verbose_name="Роль")
-    is_group = models.BooleanField(verbose_name="Является группой", default=False)
-
-    def __repr__(self):
-        return str(self.name) + f" ({self.role})"
-
-
 class EventKind(CommonModel):
     class Meta:
         verbose_name = "Тип события"
@@ -105,6 +87,24 @@ class EventKind(CommonModel):
 
     def __repr__(self):
         return "{} [{}]".format(str(self.name), self.pk)
+
+class AbstractDay(CommonModel):
+    class Meta:
+        verbose_name = "Абстрактный день"
+        verbose_name_plural = "Абстрактные дни"
+
+    day_number = models.IntegerField(verbose_name="Смещение от начала повторяющгося фрагмента (пн. первой недели)")
+    name = models.CharField(verbose_name="Имя дня в рамках шаблона", max_length=64)
+
+
+class AbstractSchedule(CommonModel):
+    class Meta:
+        verbose_name = "Абстрактное расписание"
+        verbose_name_plural = "Абстрактные расписания"
+
+    repetition_period = models.IntegerField(verbose_name="Период повторения")
+    repeatable = models.BooleanField(verbose_name="Повторяется ли")
+    aligned_by_week_day = models.IntegerField(verbose_name="Выравнивание относительно дня недели (null=0, пн=1, ...)")
 
 
 class Schedule(CommonModel):
@@ -123,6 +123,10 @@ class Schedule(CommonModel):
     course = models.IntegerField(verbose_name="Курс")
     semester = models.IntegerField(verbose_name="Семестр")
     years = models.CharField(max_length=16, verbose_name="Учебный год")
+    start_date = models.DateField(verbose_name="День начала семестра (вкл.)")
+    end_date = models.DateField(verbose_name="День окончания семестра (вкл.)")
+    starting_day_number = models.ForeignKey(AbstractDay, on_delete=models.PROTECT, verbose_name="Номер дня начала (двухнедельного) цикла")
+    abstract_schedule = models.ForeignKey(AbstractSchedule, on_delete=models.PROTECT, verbose_name="Абстрактное расписание")
 
     def first_event(self):
         events = self.events.all()
@@ -137,6 +141,40 @@ class Schedule(CommonModel):
     def __repr__(self):
         return f"{self.faculty},{self.years},{self.scope},{self.course}к,{self.semester}сем"
 
+class organization(CommonModel):
+    class Meta:
+        verbose_name = "Учреждение"
+        verbose_name_plural = "Учреждения"
+
+    name = models.CharField(verbose_name="Имя учреждения", max_length=64)
+    schedule = models.ForeignKey(Schedule, on_delete=models.PROTECT, verbose_name="Связанное расписание")
+
+class department(CommonModel):
+    class Meta:
+        verbose_name = "Подразделение"
+        verbose_name_plural = "Подразделения"
+    
+    name = models.CharField(verbose_name="Имя подразделения", max_length=64)
+    department = models.ForeignKey(department, on_delete=models.SET_NULL, verbose_name="Подразделение")
+    organization = models.ForeignKey(organization, on_delete=models.CASCADE, verbose_name="Учреждение")
+
+class EventParticipant(CommonModel):
+    class Meta:
+        verbose_name = "Участник события"
+        verbose_name_plural = "Участники события"
+
+    class Role(models.TextChoices):
+        STUDENT = "student", "Студент"
+        TEACHER = "teacher", "Преподаватель"
+        ASSISTANT = "assistant", "Ассистент"
+
+    name = models.CharField(max_length=255, verbose_name="Имя")
+    role = models.CharField(choices=Role, max_length=48, null=False, verbose_name="Роль")
+    is_group = models.BooleanField(verbose_name="Является группой", default=False)
+    department = models.ForeignKey(department, on_delete=models.SET_NULL, verbose_name="Подразделение")
+
+    def __repr__(self):
+        return str(self.name) + f" ({self.role})"
 
 class Event(CommonModel):
     class Meta:
@@ -152,6 +190,11 @@ class Event(CommonModel):
         related_name="events",
         on_delete=models.CASCADE,
     )
+    abstract_schedule = models.ForeignKey(
+        AbstractSchedule, 
+        on_delete=models.CASCADE,
+        related_name="events",
+        verbose_name="Абстрактное расписание")
 
     def __repr__(self):
         return f"Занятие по {self.subject.name} [{self.pk}]"
