@@ -118,7 +118,7 @@ class Department(CommonModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        verbose_name="Подразделение"
+        verbose_name="Родительское подразделение"
         )
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, verbose_name="Учреждение")
 
@@ -216,7 +216,7 @@ class Event(CommonModel):
     date = models.DateField(null=True, blank=False, verbose_name="Дата")
     kind_override = models.ForeignKey(EventKind, null=True, on_delete=models.PROTECT, verbose_name="Тип")
     subject_override = models.ForeignKey(Subject, null=True, on_delete=models.PROTECT, verbose_name="Предмет")
-    participants_override = models.ManyToManyField(EventParticipant, null=True, verbose_name="Участники")
+    participants_override = models.ManyToManyField(EventParticipant, verbose_name="Участники")
     place_override = models.ForeignKey(EventPlace, null=True, on_delete=models.PROTECT, verbose_name="Место")
     time_slot_override = models.ForeignKey(TimeSlot, null=True, on_delete=models.PROTECT, verbose_name="Временной интервал")
     abstract_event = models.ForeignKey(AbstractEvent, null=True, on_delete=models.PROTECT, verbose_name="Абстрактное событие")
