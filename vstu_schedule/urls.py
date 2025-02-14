@@ -24,6 +24,7 @@ from api.views import index
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
+    path('corrections/', include('corrections.urls')),
     path("", index),
     path("accounts/profile/", index),
 ]
