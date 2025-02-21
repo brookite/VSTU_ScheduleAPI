@@ -229,3 +229,17 @@ class Event(CommonModel):
 
     def __repr__(self):
         return f"Занятие по {self.abstract_event.subject.name} [{self.pk}]"
+
+
+class DayDateOverride(CommonModel):
+    class Meta:
+        verbose_name = "Перенос дня на другую дату"
+        verbose_name_plural = "Переносы дней на другие даты"
+
+    day_source = models.DateField(blank=False, verbose_name="Перенести с даты")
+    day_destination = models.DateField(blank=False, verbose_name="Перенести на дату")
+    schedule = models.ManyToManyField(
+        Schedule, 
+        related_name="day_overrides", 
+        verbose_name="Расписание"
+    )

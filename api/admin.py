@@ -15,6 +15,7 @@ from api.models import (
     Schedule,
     Subject,
     TimeSlot,
+    DayDateOverride,
 )
 
 from rest_framework.authtoken.admin import TokenAdmin
@@ -108,6 +109,12 @@ class TimeSlotAdmin(BaseAdmin):
     list_display = ("alt_name", "start_time", "end_time")
     search_fields = ("alt_name", "start_time", "end_time")
     list_filter = ("alt_name",)
+
+
+@admin.register(DayDateOverride)
+class DayDateOverrideAdmin(BaseAdmin):
+    list_display = ("day_source", "day_destination")
+    search_fields = ("day_source", "day_destination")
 
 
 TokenAdmin.raw_id_fields = ["user"]
